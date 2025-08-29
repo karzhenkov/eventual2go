@@ -21,7 +21,7 @@ func ExampleFuture() {
 	}
 
 	// set up error handler
-	var onerror eventual2go.ErrorHandler = func(e error)  {
+	var onerror eventual2go.ErrorHandler = func(e error) {
 		fmt.Println("ERROR:", e)
 	}
 

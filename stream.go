@@ -142,7 +142,7 @@ func TransformStreamWhere[T, V any](s *Stream[T], t Transformer[T, V], f ...Filt
 
 // WhereNot registers a Filter function and returns the filtered stream. Elements will be added if the Filter returns FALSE.
 func (s *Stream[T]) WhereNot(f ...Filter[T]) (fs *Stream[T]) {
-	fs = DeriveStream(s,filterNot(f))
+	fs = DeriveStream(s, filterNot(f))
 	return
 }
 
@@ -218,7 +218,7 @@ func pipeToChan[T any](c chan T) Subscriber[T] {
 	}
 }
 func closeChan[T any](c chan T) CompletionHandler[Data] {
-	return func(d Data)  {
+	return func(d Data) {
 		close(c)
 	}
 }

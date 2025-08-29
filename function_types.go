@@ -14,7 +14,7 @@ type ErrorHandler func(error)
 type Subscriber[T any] func(T)
 
 // A DeriveSubscriber gets invoked every time data is added on the source stream and is responsible for adding the (transformed) data on the sink stream controller.
-type DeriveSubscriber [T, V any] func(*StreamController[V], T)
+type DeriveSubscriber[T, V any] func(*StreamController[V], T)
 
 // A Transformer gets invoked when data is added to the consumed stream. The output gets added to the transformed
 // stream.

@@ -65,7 +65,6 @@ func (f *Future[T]) completeError(err error) {
 	f.completed = true
 }
 
-
 // Then registers a completion handler. If the future is already complete, the handler gets executed immediately.
 // Returns a future that gets completed with result of the handler.
 func (f *Future[T]) Then(ch CompletionHandler[T]) {
@@ -88,7 +87,7 @@ func (f *Future[T]) WaitUntilComplete() {
 }
 
 // WaitUntilTimeout blocks until the future is complete or the timeout is reached.
-func (f *Future [T]) WaitUntilTimeout(timeout time.Duration) (complete bool) {
+func (f *Future[T]) WaitUntilTimeout(timeout time.Duration) (complete bool) {
 	if !f.Completed() {
 		select {
 		case <-f.AsChan():
@@ -113,7 +112,7 @@ func (f *Future[T]) ErrResult() error {
 // immediately.
 // Returns a future that either gets completed with result of the handler or error completed with the error from handler,
 // if not nil.
-func (f *Future[T]) Err(eh ErrorHandler)  {
+func (f *Future[T]) Err(eh ErrorHandler) {
 	f.m.Lock()
 
 	if f.err != nil {
@@ -131,13 +130,13 @@ func (f *Future[T]) Err(eh ErrorHandler)  {
 func (f *Future[T]) AsChan() chan T {
 	c := make(chan T, 1)
 	cmpl := func(d chan T) CompletionHandler[T] {
-		return func(e T)  {
+		return func(e T) {
 			d <- e
 			close(d)
 		}
 	}
 	ecmpl := func(d chan T) ErrorHandler {
-		return func(e error)  {
+		return func(e error) {
 			close(d)
 		}
 	}
@@ -155,7 +154,7 @@ func (f *Future[T]) AsErrChan() chan error {
 		}
 	}
 	ecmpl := func(d chan error) ErrorHandler {
-		return func(e error)  {
+		return func(e error) {
 			d <- e
 			close(d)
 		}

@@ -75,7 +75,7 @@ func completeFuture[T any](c *Completer[T]) CompletionHandler[T] {
 }
 
 func completeFutureError[T any](c *Completer[T]) ErrorHandler {
-	return func(err error)  {
+	return func(err error) {
 		c.CompleteError(err)
 	}
 }

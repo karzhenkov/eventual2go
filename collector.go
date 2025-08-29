@@ -54,7 +54,7 @@ func (c *Collector[T]) AddFuture(f *Future[T]) {
 	f.Then(c.collectFuture)
 }
 
-func (c *Collector[T]) collectFuture(d T){
+func (c *Collector[T]) collectFuture(d T) {
 	c.Add(d)
 }
 

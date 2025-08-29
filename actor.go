@@ -7,7 +7,7 @@ type message struct {
 type loop struct{}
 type shutdown message
 
-//ActorMessageStream is used to send messages to an actor.
+// ActorMessageStream is used to send messages to an actor.
 type ActorMessageStream struct {
 	streamController *StreamController[Data]
 	finalErr         *Future[error]

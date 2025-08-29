@@ -27,7 +27,7 @@ func TestFutureBasicCompletion(t *testing.T) {
 		t.Error("Completed with wrong args")
 	}
 
-	if !f.Result(){
+	if !f.Result() {
 		t.Error("Completed with wrong args")
 	}
 }
@@ -125,7 +125,7 @@ func testcompleter(c chan interface{}) CompletionHandler[Data] {
 }
 
 func testcompletererr(c chan error) ErrorHandler {
-	return func(e error)  {
+	return func(e error) {
 		c <- e
 	}
 }

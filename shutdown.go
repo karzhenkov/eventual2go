@@ -41,7 +41,7 @@ func (sd *Shutdown) Do(d Data) (errs []error) {
 }
 
 func (sd *Shutdown) doShutdown(s Shutdowner) CompletionHandler[Data] {
-	return func(d Data)  {
+	return func(d Data) {
 		if err := s.Shutdown(d); err != nil {
 			sd.m.Lock()
 			sd.errors = append(sd.errors, err)
