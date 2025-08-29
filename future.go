@@ -92,12 +92,14 @@ func (f *Future[T]) WaitUntilTimeout(timeout time.Duration) (complete bool) {
 	return
 }
 
-// Result returns the result of the future, nil if called before completion or after error completion.
+// Result returns the result of the future, nil if called after error completion.
+// Should be called only after Complete() returns true.
 func (f *Future[T]) Result() T {
 	return f.result
 }
 
-// ErrResult returns the resulting error of the future, nil if called before completion or after non-error completion.
+// ErrResult returns the resulting error of the future, nil if called after non-error completion.
+// Should be called only after Complete() returns true.
 func (f *Future[T]) ErrResult() error {
 	return f.err
 }
