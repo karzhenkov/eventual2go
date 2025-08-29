@@ -28,18 +28,27 @@ func newFuture[T any]() (F *Future[T]) {
 	return
 }
 
-// Completes the future with the given data and triggers al registered completion handlers. Panics if the future is already
+// Completes the future with the given data and triggers al registered completion handlers. Returns false if the future is already
 // complete.
-func (f *Future[T]) complete(d T) {
+func (f *Future[T]) tryComplete(d T) bool {
 	defer LockGuard(f.m)()
 	if f.completed {
-		panic(fmt.Sprint("Completed complete future with", d))
+		return false
 	}
 	f.result = d
 	for _, fc := range f.fcs {
 		go fc(d)
 	}
 	f.completed = true
+	return true
+}
+
+// Completes the future with the given data and triggers al registered completion handlers. Panics if the future is already
+// complete.
+func (f *Future[T]) complete(d T) {
+	if !f.tryComplete(d) {
+		panic(fmt.Sprint("Completed complete future with", d))
+	}
 }
 
 // Completed returns the completion state.
@@ -48,18 +57,27 @@ func (f *Future[T]) Completed() bool {
 	return f.completed
 }
 
-// Completes the future with the given error and triggers al registered error handlers. Panics if the future is already
+// Completes the future with the given error and triggers al registered error handlers. Returns false if the future is already
 // complete.
-func (f *Future[T]) completeError(err error) {
+func (f *Future[T]) tryCompleteError(err error) bool {
 	defer LockGuard(f.m)()
 	if f.completed {
-		panic(fmt.Sprint("Errorcompleted complete future with", err))
+		return false
 	}
 	f.err = err
 	for _, fce := range f.fces {
 		fce(f.err)
 	}
 	f.completed = true
+	return true
+}
+
+// Completes the future with the given error and triggers al registered error handlers. Panics if the future is already
+// complete.
+func (f *Future[T]) completeError(err error) {
+	if !f.tryCompleteError(err) {
+		panic(fmt.Sprint("Errorcompleted complete future with", err))
+	}
 }
 
 // Then registers a completion handler. If the future is already complete, the handler gets executed immediately.
