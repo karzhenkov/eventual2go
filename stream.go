@@ -2,6 +2,7 @@ package eventual2go
 
 import (
 	"sync"
+	"sync/atomic"
 )
 
 // A Stream can be consumed or new streams be derived by registering handler functions.
@@ -47,7 +48,7 @@ func (s *Stream[T]) Listen(sr Subscriber[T]) (stop *Completer[Data]) {
 	stop = NewCompleter[Data]()
 	s.m.Lock()
 	defer s.m.Unlock()
-	s.next.Then(listen(sr, stop.Future(), true))
+	s.next.Then(listen(sr, stop.Future().GetCompletionFlag(), true))
 	return
 }
 
@@ -56,13 +57,13 @@ func (s *Stream[T]) ListenNonBlocking(sr Subscriber[T]) (stop *Completer[Data]) 
 	stop = NewCompleter[Data]()
 	s.m.Lock()
 	defer s.m.Unlock()
-	s.next.Then(listen(sr, stop.Future(), false))
+	s.next.Then(listen(sr, stop.Future().GetCompletionFlag(), false))
 	return
 }
 
-func listen[T any](sr Subscriber[T], stop *Future[Data], block bool) CompletionHandler[*streamEvent[T]] {
+func listen[T any](sr Subscriber[T], stop *atomic.Bool, block bool) CompletionHandler[*streamEvent[T]] {
 	return func(evt *streamEvent[T]) {
-		if !stop.Completed() {
+		if !stop.Load() {
 			if block {
 				sr(evt.data)
 			} else {
@@ -79,7 +80,7 @@ func DeriveStream[T, V any](s *Stream[T], dsr DeriveSubscriber[T, V]) (ds *Strea
 	ds = sc.Stream()
 	s.m.Lock()
 	defer s.m.Unlock()
-	s.next.Then(listen(derive(sc, dsr), ds.close.Future(), true))
+	s.next.Then(listen(derive(sc, dsr), ds.close.Future().GetCompletionFlag(), true))
 	return
 }
 

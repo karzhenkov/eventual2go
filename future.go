@@ -3,6 +3,7 @@ package eventual2go
 import (
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -162,4 +163,13 @@ func (f *Future[T]) AsErrChan() chan error {
 	f.Then(cmpl(c))
 	f.Err(ecmpl(c))
 	return c
+}
+
+// GetCompletionFlag returns atomic flag that will be set on completion
+func (f *Future[T]) GetCompletionFlag() *atomic.Bool {
+	flag := new(atomic.Bool)
+	setFlag := func() { flag.Store(true) }
+	f.Then(func(T) { setFlag() })
+	f.Err(func(error) { setFlag() })
+	return flag
 }
