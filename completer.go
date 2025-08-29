@@ -74,7 +74,5 @@ func (c *Completer[T]) CompleteOnFuture(f *Future[T]) {
 
 func timeout[T any](c *Completer[T], d time.Duration) {
 	time.Sleep(d)
-	if !c.Completed() {
-		c.CompleteError(ErrTimeout)
-	}
+	c.f.tryCompleteError(ErrTimeout)
 }
