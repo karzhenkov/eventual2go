@@ -21,8 +21,7 @@ func NewStreamController[T any]() (sc *StreamController[T]) {
 
 // Add adds an element to the stream.
 func (sc *StreamController[T]) Add(d T) {
-	sc.m.Lock()
-	defer sc.m.Unlock()
+	defer LockGuard(sc.m)()
 	next := sc.getNext()
 	next.Complete(&streamEvent[T]{
 		data: d,

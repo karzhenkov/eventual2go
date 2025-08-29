@@ -31,8 +31,7 @@ func newFuture[T any]() (F *Future[T]) {
 // Completes the future with the given data and triggers al registered completion handlers. Panics if the future is already
 // complete.
 func (f *Future[T]) complete(d T) {
-	f.m.Lock()
-	defer f.m.Unlock()
+	defer LockGuard(f.m)()
 	if f.completed {
 		panic(fmt.Sprint("Completed complete future with", d))
 	}
@@ -45,16 +44,14 @@ func (f *Future[T]) complete(d T) {
 
 // Completed returns the completion state.
 func (f *Future[T]) Completed() bool {
-	f.m.RLock()
-	defer f.m.RUnlock()
+	defer RLockGuard(f.m)()
 	return f.completed
 }
 
 // Completes the future with the given error and triggers al registered error handlers. Panics if the future is already
 // complete.
 func (f *Future[T]) completeError(err error) {
-	f.m.Lock()
-	defer f.m.Unlock()
+	defer LockGuard(f.m)()
 	if f.completed {
 		panic(fmt.Sprint("Errorcompleted complete future with", err))
 	}

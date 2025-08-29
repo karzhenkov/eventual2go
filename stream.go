@@ -22,8 +22,7 @@ func newStream[T any](next *Future[*streamEvent[T]]) (s *Stream[T]) {
 }
 
 func (s *Stream[T]) updateNext(next *Future[*streamEvent[T]]) {
-	s.m.Lock()
-	defer s.m.Unlock()
+	defer LockGuard(s.m)()
 	s.next = next
 }
 
@@ -45,8 +44,7 @@ func (s *Stream[T]) CloseOnFuture(f *Future[Data]) {
 // Listen registers a subscriber. Returns a Completer, which can be used to terminate the subcription.
 func (s *Stream[T]) Listen(sr Subscriber[T]) (stop *Completer[Data]) {
 	stop = NewCompleter[Data]()
-	s.m.Lock()
-	defer s.m.Unlock()
+	defer LockGuard(s.m)()
 	s.next.Then(listen(sr, stop.Future(), true))
 	return
 }
@@ -54,8 +52,7 @@ func (s *Stream[T]) Listen(sr Subscriber[T]) (stop *Completer[Data]) {
 // ListenNonBlocking is the same as Listen, but the subscriber is not blocking the subcription.
 func (s *Stream[T]) ListenNonBlocking(sr Subscriber[T]) (stop *Completer[Data]) {
 	stop = NewCompleter[Data]()
-	s.m.Lock()
-	defer s.m.Unlock()
+	defer LockGuard(s.m)()
 	s.next.Then(listen(sr, stop.Future(), false))
 	return
 }
@@ -77,8 +74,7 @@ func listen[T any](sr Subscriber[T], stop *Future[Data], block bool) CompletionH
 func DeriveStream[T, V any](s *Stream[T], dsr DeriveSubscriber[T, V]) (ds *Stream[V]) {
 	sc := NewStreamController[V]()
 	ds = sc.Stream()
-	s.m.Lock()
-	defer s.m.Unlock()
+	defer LockGuard(s.m)()
 	s.next.Then(listen(derive(sc, dsr), ds.close.Future(), true))
 	return
 }
@@ -161,8 +157,7 @@ func filterNot[T any](f []Filter[T]) DeriveSubscriber[T, T] {
 func (s *Stream[T]) First() (f *Future[T]) {
 	c := NewCompleter[T]()
 	f = c.Future()
-	s.m.Lock()
-	defer s.m.Unlock()
+	defer LockGuard(s.m)()
 	s.next.Then(first(c))
 	return
 }
