@@ -70,15 +70,12 @@ func (f *Future[T]) completeError(err error) {
 func (f *Future[T]) Then(ch CompletionHandler[T]) {
 
 	f.m.Lock()
-	if f.completed && f.err == nil {
-		f.m.Unlock()
-		ch(f.result)
-		return
-	} else if !f.completed {
+	if !f.completed {
 		f.fcs = append(f.fcs, ch)
+	} else if f.err == nil {
+		defer ch(f.result)
 	}
 	f.m.Unlock()
-	return
 }
 
 // WaitUntilComplete blocks until the future is complete.
@@ -115,51 +112,36 @@ func (f *Future[T]) ErrResult() error {
 func (f *Future[T]) Err(eh ErrorHandler) {
 	f.m.Lock()
 
-	if f.err != nil {
-		f.m.Unlock()
-		eh(f.err)
-		return
-	} else if !f.completed {
+	if !f.completed {
 		f.fces = append(f.fces, eh)
+	} else if f.err != nil {
+		defer eh(f.err)
 	}
 	f.m.Unlock()
-	return
 }
 
 // AsChan returns a channel which either will receive the result on completion or gets closed on error completion of the Future.
-func (f *Future[T]) AsChan() chan T {
+func (f *Future[T]) AsChan() <-chan T {
 	c := make(chan T, 1)
-	cmpl := func(d chan T) CompletionHandler[T] {
-		return func(e T) {
-			d <- e
-			close(d)
-		}
-	}
-	ecmpl := func(d chan T) ErrorHandler {
-		return func(e error) {
-			close(d)
-		}
-	}
-	f.Then(cmpl(c))
-	f.Err(ecmpl(c))
+	f.Then(func(d T) {
+		c <- d
+		close(c)
+	})
+	f.Err(func(error) {
+		close(c)
+	})
 	return c
 }
 
 // AsErrChan returns a channel which either will receive the error on error completion or gets closed on completion of the Future.
-func (f *Future[T]) AsErrChan() chan error {
+func (f *Future[T]) AsErrChan() <-chan error {
 	c := make(chan error, 1)
-	cmpl := func(d chan error) CompletionHandler[T] {
-		return func(e T) {
-			close(d)
-		}
-	}
-	ecmpl := func(d chan error) ErrorHandler {
-		return func(e error) {
-			d <- e
-			close(d)
-		}
-	}
-	f.Then(cmpl(c))
-	f.Err(ecmpl(c))
+	f.Then(func(T) {
+		close(c)
+	})
+	f.Err(func(e error) {
+		c <- e
+		close(c)
+	})
 	return c
 }

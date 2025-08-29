@@ -15,7 +15,7 @@ func NewStreamController[T any]() (sc *StreamController[T]) {
 		m:    &sync.Mutex{},
 		next: NewCompleter[*streamEvent[T]](),
 	}
-	sc.stream = newStream[T](sc.next.Future())
+	sc.stream = newStream(sc.next.Future())
 	return
 }
 

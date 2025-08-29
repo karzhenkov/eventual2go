@@ -36,15 +36,14 @@ func (c *Completer[T]) Complete(d T) {
 
 // CompleteOn invokes a CompletionFunc in a go-routine and either completes with the resut or the error if it is not nil. Don't invoke this function more then once to avoid multiple complition panics.
 func (c *Completer[T]) CompleteOn(f CompletionFunc[T]) {
-	handler := func(f CompletionFunc[T]) {
+	go func() {
 		d, err := f()
 		if err == nil {
 			c.Complete(d)
 		} else {
 			c.CompleteError(err)
 		}
-	}
-	go handler(f)
+	}()
 }
 
 // Future returns the associated Future.
@@ -64,20 +63,8 @@ func (c *Completer[T]) CompleteError(err error) {
 
 // CompleteOnFuture completes the completer with the result or the error of a `Future`.
 func (c *Completer[T]) CompleteOnFuture(f *Future[T]) {
-	f.Then(completeFuture(c))
-	f.Err(completeFutureError(c))
-}
-
-func completeFuture[T any](c *Completer[T]) CompletionHandler[T] {
-	return func(d T) {
-		c.Complete(d)
-	}
-}
-
-func completeFutureError[T any](c *Completer[T]) ErrorHandler {
-	return func(err error) {
-		c.CompleteError(err)
-	}
+	f.Then(c.Complete)
+	f.Err(c.CompleteError)
 }
 
 func timeout[T any](c *Completer[T], d time.Duration) {
