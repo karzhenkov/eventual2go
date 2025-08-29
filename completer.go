@@ -56,6 +56,11 @@ func (c *Completer[T]) Completed() bool {
 	return c.f.Completed()
 }
 
+// Outcome returns outcome of the completer, nil if called before completion
+func (c *Completer[T]) Outcome() *Outcome[T] {
+	return c.f.Outcome()
+}
+
 // CompleteError completes the Completer with the given error and triggers all registered error handlers. Panics if the Completer is already complete.
 func (c *Completer[T]) CompleteError(err error) {
 	c.f.completeError(err)

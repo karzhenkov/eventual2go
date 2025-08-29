@@ -104,6 +104,18 @@ func (f *Future[T]) ErrResult() error {
 	return f.err
 }
 
+// Outcome returns outcome of the future, nil if called before completion
+func (f *Future[T]) Outcome() *Outcome[T] {
+	if !f.Completed() {
+		return nil
+	}
+
+	return &Outcome[T]{
+		Result: f.result,
+		Error:  f.err,
+	}
+}
+
 // Err registers an error handler. If the future is already completed with an error, the handler gets executed
 // immediately.
 // Returns a future that either gets completed with result of the handler or error completed with the error from handler,

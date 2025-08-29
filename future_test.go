@@ -18,17 +18,16 @@ func TestFutureBasicCompletion(t *testing.T) {
 
 	cp.Complete(true)
 
-	//
-	if !f.Completed() {
+	if o := f.Outcome(); o == nil {
 		t.Error("not completed")
-	}
+	} else {
+		if !(<-c) {
+			t.Error("Completed with wrong args")
+		}
 
-	if !(<-c) {
-		t.Error("Completed with wrong args")
-	}
-
-	if !f.Result() {
-		t.Error("Completed with wrong args")
+		if !o.Result {
+			t.Error("Completed with wrong args")
+		}
 	}
 }
 
